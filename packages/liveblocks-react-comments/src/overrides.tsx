@@ -1,3 +1,5 @@
+"use client";
+
 import type { PropsWithChildren } from "react";
 import { createContext, useContext, useMemo } from "react";
 import * as React from "react";
@@ -7,6 +9,10 @@ import type { Direction } from "./types";
 export interface LocalizationOverrides {
   locale: string;
   dir: Direction;
+}
+
+export interface GlobalOverrides {
+  UNKNOWN_USER: string;
 }
 
 export interface CommentOverrides {
@@ -34,6 +40,7 @@ export interface ThreadOverrides {
 }
 
 export type Overrides = LocalizationOverrides &
+  GlobalOverrides &
   ComposerOverrides &
   CommentOverrides &
   ThreadOverrides;
@@ -45,6 +52,7 @@ type OverridesProviderProps = PropsWithChildren<{
 export const defaultOverrides: Overrides = {
   locale: "en",
   dir: "ltr",
+  UNKNOWN_USER: "Anonymous",
   COMPOSER_INSERT_MENTION: "Mention someone",
   COMPOSER_PLACEHOLDER: "Write a comment…",
   COMPOSER_SEND: "Send",

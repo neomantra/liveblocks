@@ -28,7 +28,7 @@
   --lb-elevation-foreground-contrast: 6%;
   --lb-tooltip-foreground-contrast: 18%;
 
-  // Automatic color scales
+  // Colors
   --lb-accent-subtle: #{color-scale(
       var(--lb-background),
       var(--lb-accent),
@@ -128,7 +128,11 @@
 }
 
 .lb-root {
+  overflow-wrap: break-word;
   accent-color: var(--lb-accent);
+  text-size-adjust: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
   *,
   ::before,
@@ -170,6 +174,7 @@
   transition-timing-function: var(--lb-transition-easing);
   transition-duration: var(--lb-transition-duration);
   transition-property: background, color, box-shadow, opacity;
+  -webkit-tap-highlight-color: transparent;
 
   &:focus-visible {
     box-shadow:
@@ -417,6 +422,31 @@
 }
 
 /**
+ * User
+ */
+
+.lb-user[data-loading]::before {
+  content: "\FEFF";
+  display: inline-block;
+  vertical-align: middle;
+  width: 10ch;
+  height: 1.75ex;
+  border-radius: calc(0.375 * var(--lb-radius));
+  background: currentcolor;
+  opacity: 0.2;
+  user-select: none;
+}
+
+/**
+ * Loading
+ */
+
+.lb-avatar[data-loading],
+.lb-user[data-loading] {
+  animation: lb-animation-pulse 2s infinite ease-in-out;
+}
+
+/**
  * Body 
  */
 
@@ -592,7 +622,7 @@
   min-width: 0;
 }
 
-.lb-comment-user {
+.lb-comment-author {
   @include truncate;
 
   font-weight: 500;
@@ -790,5 +820,16 @@
 
   to {
     opacity: 0;
+  }
+}
+
+@keyframes lb-animation-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
   }
 }

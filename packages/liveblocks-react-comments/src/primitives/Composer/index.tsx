@@ -1,3 +1,5 @@
+"use client";
+
 import type {
   DetectOverflowOptions,
   UseFloatingOptions,
@@ -68,7 +70,7 @@ import {
 import { withNormalize } from "../../slate/plugins/normalize";
 import { getDOMRange } from "../../slate/utils/get-dom-range";
 import { isEmpty } from "../../slate/utils/is-empty";
-import { toggleMark } from "../../slate/utils/marks";
+import { leaveMarkEdge, toggleMark } from "../../slate/utils/marks";
 import type {
   ComposerBody as ComposerBodyData,
   ComposerBodyMention,
@@ -155,7 +157,9 @@ function ComposerEditorRenderMentionWrapper({
 
   return (
     <span {...attributes}>
-      <RenderMention userId={element.id} isSelected={isSelected} />
+      {element.id ? (
+        <RenderMention userId={element.id} isSelected={isSelected} />
+      ) : null}
       {children}
     </span>
   );
@@ -312,6 +316,8 @@ function ComposerEditorElement({
           {children}
         </p>
       );
+    default:
+      return null;
   }
 }
 
@@ -488,6 +494,7 @@ const ComposerSuggestionsListItem = forwardRef<
       () => selectedValue === value,
       [selectedValue, value]
     );
+    // TODO: Support props.id if provided, it will need to be sent up to Composer.Editor to use it in aria-activedescendant
     const id = useMemo(() => itemId(value), [itemId, value]);
 
     useEffect(() => {
@@ -567,7 +574,12 @@ const ComposerEditor = forwardRef<HTMLDivElement, ComposerEditorProps>(
     },
     forwardedRef
   ) => {
-    const { useMentionSuggestions } = useRoomContextBundle();
+    const { useMentionSuggestions, useSelf } = useRoomContextBundle();
+    const self = useSelf();
+    const isDisabled = useMemo(
+      () => disabled || !self?.canComment,
+      [disabled, self?.canComment]
+    );
     const { editor, validate, setFocused } = useComposerEditorContext();
     const { submit, focus, isValid, isFocused } = useComposer();
     const initialBody = useInitial(initialValue ?? emptyCommentBody);
@@ -633,17 +645,30 @@ const ComposerEditor = forwardRef<HTMLDivElement, ComposerEditorProps>(
           return;
         }
 
+        // Allow leaving marks with ArrowLeft
+        if (isKey(event, "ArrowLeft")) {
+          leaveMarkEdge(editor, "start");
+        }
+
+        // Allow leaving marks with ArrowRight
+        if (isKey(event, "ArrowRight")) {
+          leaveMarkEdge(editor, "end");
+        }
+
         if (mentionDraft && mentionSuggestions?.length) {
+          // Select the next mention suggestion on ArrowDown
           if (isKey(event, "ArrowDown")) {
             event.preventDefault();
             setNextSelectedMentionSuggestionIndex();
           }
 
+          // Select the previous mention suggestion on ArrowUp
           if (isKey(event, "ArrowUp")) {
             event.preventDefault();
             setPreviousSelectedMentionSuggestionIndex();
           }
 
+          // Create a mention on Enter/Tab
           if (isKey(event, "Enter") || isKey(event, "Tab")) {
             event.preventDefault();
 
@@ -651,49 +676,50 @@ const ComposerEditor = forwardRef<HTMLDivElement, ComposerEditorProps>(
             createMention(userId);
           }
 
+          // Close the suggestions on Escape
           if (isKey(event, "Escape")) {
             event.preventDefault();
             setMentionDraft(undefined);
             setSelectedMentionSuggestionIndex(0);
           }
         } else {
-          // ⎋
+          // Blur the editor on Escape
           if (isKey(event, "Escape")) {
             event.preventDefault();
             ReactEditor.blur(editor);
           }
 
-          // ⏎
+          // Submit the editor on Enter
           if (isKey(event, "Enter", { shift: false }) && isValid) {
             event.preventDefault();
             submit();
           }
 
-          // ⇧ + ⏎
+          // Create a new line on Shift + Enter
           if (isKey(event, "Enter", { shift: true })) {
             event.preventDefault();
             editor.insertBreak();
           }
 
-          // ⌘/⌃ + B
+          // Toggle bold on Command/Control + B
           if (isKey(event, "b", { mod: true })) {
             event.preventDefault();
             toggleMark(editor, "bold");
           }
 
-          // ⌘/⌃ + I
+          // Toggle italic on Command/Control + I
           if (isKey(event, "i", { mod: true })) {
             event.preventDefault();
             toggleMark(editor, "italic");
           }
 
-          // ⌘/⌃ + ⇧ + S
+          // Toggle strikethrough on Command/Control + Shift + S
           if (isKey(event, "s", { mod: true, shift: true })) {
             event.preventDefault();
             toggleMark(editor, "strikethrough");
           }
 
-          // ⌘/⌃ + E
+          // Toggle code on Command/Control + E
           if (isKey(event, "e", { mod: true })) {
             event.preventDefault();
             toggleMark(editor, "code");
@@ -799,11 +825,11 @@ const ComposerEditor = forwardRef<HTMLDivElement, ComposerEditorProps>(
           autoCapitalize="sentences"
           aria-label="Comment body"
           data-focused={isFocused || undefined}
-          data-disabled={disabled || undefined}
+          data-disabled={isDisabled || undefined}
           {...propsWhileSuggesting}
           {...props}
-          readOnly={disabled}
-          disabled={disabled}
+          readOnly={isDisabled}
+          disabled={isDisabled}
           onKeyDown={handleKeyDown}
           onFocus={handleFocus}
           onBlur={handleBlur}
@@ -951,14 +977,20 @@ const ComposerForm = forwardRef<HTMLFormElement, ComposerFormProps>(
 const ComposerSubmit = forwardRef<HTMLButtonElement, ComposerSubmitProps>(
   ({ children, disabled, asChild, ...props }, forwardedRef) => {
     const Component = asChild ? Slot : "button";
+    const { useSelf } = useRoomContextBundle();
     const { isValid } = useComposer();
+    const self = useSelf();
+    const isDisabled = useMemo(
+      () => disabled || !isValid || !self?.canComment,
+      [disabled, isValid, self?.canComment]
+    );
 
     return (
       <Component
         type="submit"
         {...props}
         ref={forwardedRef}
-        disabled={disabled || !isValid}
+        disabled={isDisabled}
       >
         {children}
       </Component>

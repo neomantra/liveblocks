@@ -1,3 +1,5 @@
+"use client";
+
 import type { CommentData } from "@liveblocks/core";
 import { useRoomContextBundle } from "@liveblocks/react";
 import type { ComponentPropsWithoutRef, MouseEvent, ReactNode } from "react";
@@ -55,19 +57,24 @@ export interface CommentProps extends ComponentPropsWithoutRef<"div"> {
   indentBody?: boolean;
 
   /**
-   * TODO: Add description
+   * An event handler called when the comment is edited.
    */
   onEdit?: (comment: CommentData) => void;
 
   /**
-   * TODO: Add description
+   * An event handler called when the comment is deleted.
    */
   onDelete?: (comment: CommentData) => void;
 
   /**
-   * TODO: Add description
+   * An event handler called when clicking on the author.
    */
-  onMentionClick?: (userId: string, event: MouseEvent<HTMLSpanElement>) => void;
+  onAuthorClick?: (userId: string, event: MouseEvent<HTMLElement>) => void;
+
+  /**
+   * An event handler called when clicking on a mention.
+   */
+  onMentionClick?: (userId: string, event: MouseEvent<HTMLElement>) => void;
 
   /**
    * Override the component's strings.
@@ -122,6 +129,7 @@ export const Comment = forwardRef<HTMLDivElement, CommentProps>(
       indentBody = true,
       showDeleted,
       showActions = "hover",
+      onAuthorClick,
       onMentionClick,
       onEdit,
       onDelete,
@@ -175,6 +183,13 @@ export const Comment = forwardRef<HTMLDivElement, CommentProps>(
       });
     }, [comment, deleteComment, onDelete]);
 
+    const handleAuthorClick = useCallback(
+      (event: MouseEvent<HTMLElement>) => {
+        onAuthorClick?.(comment.userId, event);
+      },
+      [comment.userId, onAuthorClick]
+    );
+
     if (!showDeleted && !comment.body) {
       return null;
     }
@@ -196,9 +211,17 @@ export const Comment = forwardRef<HTMLDivElement, CommentProps>(
         >
           <div className="lb-comment-header">
             <div className="lb-comment-details">
-              <Avatar className="lb-comment-avatar" userId={comment.userId} />
+              <Avatar
+                className="lb-comment-avatar"
+                userId={comment.userId}
+                onClick={handleAuthorClick}
+              />
               <span className="lb-comment-details-labels">
-                <User className="lb-comment-user" userId={comment.userId} />
+                <User
+                  className="lb-comment-author"
+                  userId={comment.userId}
+                  onClick={handleAuthorClick}
+                />
                 <span className="lb-comment-date">
                   <Timestamp
                     locale={$.locale}
