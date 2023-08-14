@@ -93,6 +93,7 @@ export function createCommentsApi<ThreadMetadata extends BaseMetadata>(
 
     return await fetch(url, {
       ...options,
+      credentials: "include",
       headers: {
         ...options?.headers,
         Authorization: `Bearer ${getAuthBearerHeaderFromAuthValue(authValue)}`,
