@@ -4,7 +4,10 @@ import { createClient } from "@liveblocks/client";
 import { createRoomContext } from "@liveblocks/react";
 
 export const client = createClient({
-  authEndpoint: "/api/auth",
+  // authEndpoint: "/api/auth",
+  publicApiKey: "pk_dev_2dB5Vlbqmk-SSGgcAJaFBvsr1ZaQhCZJIK1jT69FJXAhgNoObf6Fii18apLcoQOZ",
+  // @ts-expect-error: dev env
+  liveblocksServer: "wss://dev.liveblocks.workers.dev/v7"
 });
 
 const {

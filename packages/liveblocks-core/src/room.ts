@@ -683,9 +683,9 @@ function makeIdFactory(connectionId: number): IdFactory {
 type HistoryOp<TPresence extends JsonObject> =
   | Op
   | {
-      readonly type: "presence";
-      readonly data: TPresence;
-    };
+    readonly type: "presence";
+    readonly data: TPresence;
+  };
 
 type IdFactory = () => string;
 
@@ -718,9 +718,9 @@ type RoomState<
 
     // Queued-up "my presence" updates to be flushed at the earliest convenience
     presenceUpdates:
-      | { type: "partial"; data: Partial<TPresence> }
-      | { type: "full"; data: TPresence }
-      | null;
+    | { type: "partial"; data: Partial<TPresence> }
+    | { type: "full"; data: TPresence }
+    | null;
     messages: ClientMsg<TPresence, TRoomEvent>[];
     storageOperations: Op[];
   };
@@ -883,11 +883,11 @@ export function createRoom<
       flushTimerID: undefined,
       lastFlushedAt: 0,
       presenceUpdates:
-        // Queue up the initial presence message as a Full Presence™ update
-        {
-          type: "full",
-          data: initialPresence,
-        },
+      // Queue up the initial presence message as a Full Presence™ update
+      {
+        type: "full",
+        data: initialPresence,
+      },
       messages: [],
       storageOperations: [],
     },
@@ -1884,17 +1884,17 @@ export function createRoom<
       messages.push(
         context.buffer.presenceUpdates.type === "full"
           ? {
-              type: ClientMsgCode.UPDATE_PRESENCE,
-              // Populating the `targetActor` field turns this message into
-              // a Full Presence™ update message (not a patch), which will get
-              // interpreted by other clients as such.
-              targetActor: -1,
-              data: context.buffer.presenceUpdates.data,
-            }
+            type: ClientMsgCode.UPDATE_PRESENCE,
+            // Populating the `targetActor` field turns this message into
+            // a Full Presence™ update message (not a patch), which will get
+            // interpreted by other clients as such.
+            targetActor: -1,
+            data: context.buffer.presenceUpdates.data,
+          }
           : {
-              type: ClientMsgCode.UPDATE_PRESENCE,
-              data: context.buffer.presenceUpdates.data,
-            }
+            type: ClientMsgCode.UPDATE_PRESENCE,
+            data: context.buffer.presenceUpdates.data,
+          }
       );
     }
     for (const event of context.buffer.messages) {
@@ -2179,7 +2179,10 @@ export function createRoom<
   };
 
   const commentsApi = createCommentsApi(config.roomId, delegates.authenticate, {
-    serverEndpoint: "https://api.liveblocks.io/v2",
+    // dev
+    serverEndpoint: "https://dev.liveblocks.workers.dev/v2"
+    // prod
+    // serverEndpoint: "https://api.liveblocks.io/v2",
   });
 
   return Object.defineProperty(
