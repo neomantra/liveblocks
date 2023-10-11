@@ -1,3 +1,39 @@
+# v1.4.6 (not released yet)
+
+### `@liveblocks/react`
+
+- Fix a race condition that could cause a Liveblocks client to hang during
+  loading when using Suspense.
+- Fix `useStatus` return value on SSR responses.
+
+### `@liveblocks/react-comments`
+
+- Export `ComposerSubmitComment` type from root too, in addition to
+  `/primitives`.
+
+# v1.4.5
+
+### `@liveblocks/react`
+
+- Fix `createThread` not creating valid comment.
+
+### `@liveblocks/node`
+
+- Fix URL encoding bug
+
+# v1.4.4
+
+### `@liveblocks/react`
+
+- Fix `removeReaction` not removing reactions which led to reactions displaying
+  a count of 0.
+
+### `@liveblocks/react-comments`
+
+- Fix reactions list (and its add button) showing on all comments.
+- Improve emoji rendering on Windows.
+- Hide country flag emojis when unsupported. (e.g. on Windows)
+
 # v1.4.3
 
 ### `@liveblocks/react`
