@@ -6,6 +6,8 @@ import { Point, Color, Layer } from "./src/types";
 const client = createClient({
   throttle: 16,
   authEndpoint: "/api/liveblocks-auth",
+  // @ts-expect-error Hidden config
+  baseUrl: "http://localhost:3333/",
 });
 
 // Presence represents the properties that will exist on every User in the Room
